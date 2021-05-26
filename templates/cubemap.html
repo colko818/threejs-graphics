@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>Cubemap</title>
+        <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+        <meta charset="utf-8">
+    </head>
+
+    <body>
+        <script type="module">
+
+            import * as THREE from 'https://colko818.pythonanywhere.com/static/js/three.module.js';
+
+            import { OrbitControls } from 'https://colko818.pythonanywhere.com/static/js/controls/OrbitControls.js';
+
+            import Stats from '../static/js/libs/stats.module.js';
+
+            var container, stats;
+
+            var SCREEN_WIDTH = window.innerWidth;
+            var SCREEN_HEIGHT = window.innerHeight;
+            var aspect_ratio = SCREEN_WIDTH / SCREEN_HEIGHT
+
+            var camera, controls, scene, renderer;
+
+            function init() {
+                container = document.createElement( 'div' );
+                document.body.appendChild( container );
+
+                // Render
+                renderer = new THREE.WebGLRenderer( { antialias: true } );
+                renderer.setSize( window.innerWidth, window.innerHeight );
+                container.appendChild( renderer.domElement );
+
+                // Camera
+                camera = new THREE.PerspectiveCamera(
+                    30,
+                    aspect_ratio,
+                    0.1,
+                    100);
+                camera.position.x = -4;
+                camera.position.y = 4;
+                camera.position.z = 2;
+
+                // Camera controls
+                controls = new OrbitControls( camera, renderer.domElement );
+                controls.enableDamping = true;
+                controls.dampingFactor = 0.05;
+                controls.screenSpacePanning = false;
+                controls.minDistance = 1;
+                controls.maxDistance = 20;
+
+                // Scene
+                scene = new THREE.Scene();
+                scene.background = new THREE.Color().setHSL( 0.6, 0, 1 );
+                scene.fog = new THREE.Fog( scene.background, 0.1, 25 );
+
+                // Lighting
+                var ambientLight = new THREE.AmbientLight( 0x222222);
+                scene.add( ambientLight );
+
+                var directionalLight0 = new THREE.DirectionalLight( 0xffffff );
+                directionalLight0.position.set( 1, 1, 1 );
+                scene.add( directionalLight0 );
+
+                var directionalLight1 = new THREE.DirectionalLight( 0x002288 );
+                directionalLight1.position.set( -1, -1, -1 );
+                scene.add( directionalLight1 );
+
+                // Box
+                var boxGeometry = new THREE.BoxGeometry( 0.2, 0.2, 0.2 );
+
+                for ( var i = 0; i < 1000; i++ ) {
+                    var boxMaterial = new THREE.MeshPhongMaterial( { flatShading: true });
+                    boxMaterial.color.setHex( Math.random() * 0xFFFFFF << 0 );
+
+                    var boxMesh = new THREE.Mesh( boxGeometry, boxMaterial );
+                    boxMesh.position.x = Math.random() * 10 - 5;
+                    boxMesh.position.y = Math.random() * 10 - 5;
+                    boxMesh.position.z = Math.random() * 10 - 5;
+                    boxMesh.updateMatrix();
+                    boxMesh.matricAutoUpdate = false;
+                    scene.add( boxMesh );
+                }
+
+                // FPS stats
+                stats = new Stats();
+                container.appendChild( stats.dom );
+
+                window.addEventListener( 'resize', onWindowResize, false );
+            }
+
+            function animate() {
+                requestAnimationFrame( animate );
+
+                var timer = Date.now() * 0.0001;
+
+                camera.position.x = Math.cos( timer ) * 20;
+                camera.position.y = 3;
+                camera.position.z = Math.sin ( timer ) * 20;
+
+                camera.lookAt( 0, 0, 0);
+
+                controls.update();
+                stats.update();
+
+                renderer.render( scene, camera );
+            }
+
+            function onWindowResize() {
+                camera.aspect = aspect_ratio;
+                camera.updateProjectionMatrix();
+                renderer.setSize( SCREEN_WIDTH, SCREEN_HEIGHT );
+            }
+
+            init();
+            animate();
+        </script>
+    </body>
+</html>
